@@ -7,6 +7,16 @@ extern crate cc_version;
 use cc_version::{cc_version, Version};
 use std::env;
 use std::path::Path;
+#[cfg(target_arch = "x86")]
+const SPECIALIZED_PATH: &str = "8086";
+#[cfg(target_arch = "x86_64")]
+const SPECIALIZED_PATH: &str = "8086-SSE";
+#[cfg(feature = "arm-vfpv2")]
+const SPECIALIZED_PATH: &str = "ARM-VFPv2";
+#[cfg(feature = "arm-vfpv2-defaultnan")]
+const SPECIALIZED_PATH: &str = "ARM-VFPv2-defaultNaN";
+#[cfg(target_arch = "riscv")]
+const SPECIALIZED_PATH: &str = "RISCV";
 
 fn main() {
     let mut builder = cc::Build::new();
@@ -28,7 +38,7 @@ fn main() {
     let softfloat_base = Path::new("berkeley-softfloat-3");
     let softfloat_source = softfloat_base.join(Path::new("source"));
     let softfloat_build = softfloat_base.join(Path::new("build"));
-    if cfg!(all(target_arch = "x86_64", target_os = "linux")) {
+    if cfg!(all(target_arch = "x86_64")) {
         let primitive_sources = [
             "s_eq128.c",
             "s_le128.c",
@@ -337,7 +347,7 @@ fn main() {
             "f128M_le_quiet.c",
             "f128M_lt_quiet.c",
         ];
-        let specialized_source_path = softfloat_source.join(Path::new("RISCV"));
+        let specialized_source_path = softfloat_source.join(Path::new(SPECIALIZED_PATH));
         builder
             .include(softfloat_build.join(Path::new("Linux-x86_64-GCC")))
             .include(&specialized_source_path)
